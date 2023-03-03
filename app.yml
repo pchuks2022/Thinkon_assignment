@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp
+  labels:
+   app: myapp
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+     maxSurge: 3
+     maxUnavailable: 1
+     timeoutSeconds: 100
+     intervalSeconds: 5
+     updatePeriodSeconds: 5
+      
+  selector:
+    matchLabels:
+      app: myapp
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: tomcat:9.0-jdk8-corretto-al2
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - name: app_port
+          containerPort: 8080
+    
+      initContainers:
+        - name: init_my_db
+          image: busybox
+          command: ['sh', '-c', 'until nslookup my_db; do echo waiting for my_db; sleep 2; done; ']

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my_db
+  labels:
+   app: my_db
+spec:
+  selector:
+    matchLabels:
+      app: my_db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: my_db
+    spec:
+      containers:
+       - name: my_db
+         image: mysql:8-debian
+         args:
+          - "--ignore-db0dir=lost+found"
+         volumeMounts:
+           - mountPath: /var/lib/mysql
+             name: db2_data
+         resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+         ports:
+         - name: mydb_port
+           containerPort: 3306
+        
+         env:
+          - name: MYSQL_ROOT_PASSWORD
+            valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: db-pass
+      nodeSelector:
+       zone: us-east-1a
+      volumes:
+        - name: db2_data
+          awsElasticBlockStore:
+            volumeID: <volume2_id>
+            fsType: ext4
+
+
+        
+
+      
+          
+
